@@ -62,7 +62,7 @@
     //#define MINTHROTTLE 1050 // for brushed ESCs like ladybird
     //#define MINTHROTTLE 1150 // (*) (**)
     //#define MINTHROTTLE 1090 // (*) (**)
-    #define MINTHROTTLE 1090   // (*) (**)
+    #define MINTHROTTLE 1060   // (*) (**)
 
   /****************************    Motor maxthrottle    *******************************/
     /* this is the maximum value for the ESCs at full power, this value can be increased up to 2000 */
@@ -718,7 +718,7 @@
       //#define LCD_TTY         // SERIAL LCD: useful to tweak parameters over cable with arduino IDE 'serial monitor'
       //#define LCD_ETPP        // I2C LCD: Eagle Tree Power Panel LCD, which is i2c (not serial)
       //#define LCD_LCD03       // I2C LCD: LCD03, which is i2c
-      #define OLED_I2C_128x64 // I2C LCD: OLED http://www.multiwii.com/forum/viewtopic.php?f=7&t=1350
+      //#define OLED_I2C_128x64 // I2C LCD: OLED http://www.multiwii.com/forum/viewtopic.php?f=7&t=1350
       //#define OLED_DIGOLE     // I2C OLED from http://www.digole.com/index.php?productID=550
 
     /******************************   Display settings   ***********************************/
@@ -755,10 +755,10 @@
 
     /* uncomment this line if you plan to use a LCD or OLED for tweaking parameters
      * http://www.multiwii.com/wiki/index.php?title=Extra_features#Configuration_Menu */
-      #define LCD_CONF
+    // #define LCD_CONF
 
     /* to include setting the aux switches for AUX1 -> AUX4 via LCD */
-      #define LCD_CONF_AUX
+    // #define LCD_CONF_AUX
 
     /* optional exclude some functionality - uncomment to suppress unwanted aux channel configuration options */
       //#define SUPPRESS_LCD_CONF_AUX2
@@ -772,14 +772,14 @@
      * http://www.multiwii.com/wiki/index.php?title=LCD_Telemetry */
 
     /********************************    Activation     ***********************************/
-    #define LCD_TELEMETRY
+    // #define LCD_TELEMETRY
 
     /* to enable automatic hopping between a choice of telemetry pages uncomment this. */
     //#define LCD_TELEMETRY_AUTO "123452679" // pages 1 to 9 in ascending order
     //#define LCD_TELEMETRY_AUTO  "212232425262729" // strong emphasis on page 2
 
     /* manual stepping sequence; first page of the sequence gets loaded at startup to allow non-interactive display */
-    #define LCD_TELEMETRY_STEP "0123456789" // should contain a 0 to allow switching off.
+    // #define LCD_TELEMETRY_STEP "0123456789" // should contain a 0 to allow switching off.
 
     /* optional exclude some functionality - uncomment to suppress some unwanted telemetry pages */
     //#define SUPPRESS_TELEMETRY_PAGE_1
