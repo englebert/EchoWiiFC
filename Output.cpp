@@ -6,6 +6,7 @@
 #include "Alarms.h"
 
 void initializeSoftPWM(void);
+void calibrateESC(void);
 
 #if defined(SERVO)
 void initializeServo();
@@ -434,7 +435,7 @@ void writeAllMotors(int16_t mc) {   // Sends commands to all motors
 /**************************************************************************************/
 /************        Initialize the PWM Timers and Registers         ******************/
 /**************************************************************************************/
-void initOutput() {
+void initOutput(uint8_t iMode) {
   /****************            mark all PWM pins as Output             ******************/
   for(uint8_t i=0;i<NUMBER_MOTOR;i++) {
     pinMode(PWM_PIN[i],OUTPUT);
@@ -554,44 +555,15 @@ void initOutput() {
   #endif
 
   /********  special version of MultiWii to calibrate all attached ESCs ************/
-  #if defined(ESC_CALIB_CANNOT_FLY)
-    writeAllMotors(ESC_CALIB_HIGH);
-    blinkLED(2,20, 2);
-    delay(4000);
-    writeAllMotors(ESC_CALIB_LOW);
-    blinkLED(3,20, 2);
-    while (1) {
-      delay(5000);
-      blinkLED(4,20, 2);
-    #if defined(BUZZER)
-      alarmArray[7] = 2;
-    #endif
-    }
-    exit; // statement never reached
+  #ifdef ESC_CALIB_CANNOT_FLY
+    calibrateESC();
   #endif
 
-  /* Englebert: Checking Dx PIN. if it is jumped as LOW */
-  /* Reference:
-   * - https://www.arduino.cc/en/Tutorial/InputPullupSerial
-   */
-  pinMode(8, INPUT_PULLUP);        // Set the Pin to INPUT and turn on the pull up resistor
-  if(digitalRead(8) == LOW) {
-    writeAllMotors(ESC_CALIB_HIGH);
-    blinkLED(2,20, 2);
-    delay(4000);
-    writeAllMotors(ESC_CALIB_LOW);
-    blinkLED(3,20, 2);
-    while (1) {
-      delay(5000);
-      blinkLED(4,20, 2);
-    #if defined(BUZZER)
-      alarmArray[7] = 2;
-    #endif
-    }
-    exit; // statement never reached
-  }
-  /* End of Englebert modification */
-  
+  #ifdef ESC_CALIB_SITCK_COMMAND
+    if(iMode == 1)
+        calibrateESC(); 
+  #endif
+
   writeAllMotors(MINCOMMAND);
   delay(300);
   #if defined(SERVO)
@@ -599,6 +571,25 @@ void initOutput() {
   #endif
 }
 
+/**************************************************************************************/
+/************                Calibrate ESC Program                   ******************/
+/**************************************************************************************/
+void calibrateESC() {
+  writeAllMotors(ESC_CALIB_HIGH);
+  blinkLED(2,20, 2);
+  delay(4000);
+  writeAllMotors(ESC_CALIB_LOW);
+  blinkLED(3,20, 2);
+
+  while (1) {
+    delay(5000);
+    blinkLED(4,20, 2);
+    #if defined(BUZZER)
+      alarmArray[7] = 2;
+    #endif
+  }
+  exit;                                                                                                     // statement never reached
+}
 
 #if defined(SERVO)
 /**************************************************************************************/

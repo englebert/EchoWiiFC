@@ -3,7 +3,7 @@
 
 extern uint8_t PWM_PIN[8];
 
-void initOutput();
+void initOutput(uint8_t iMode);
 void mixTable();
 void writeServos();
 void writeMotors();

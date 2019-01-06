@@ -72,7 +72,6 @@ void writeGlobalSet(uint8_t b) {
   #if defined(BUZZER)
     alarmArray[7] = 1; 
   #endif
-
 }
  
 void writeParams(uint8_t b) {
@@ -217,6 +216,23 @@ void writePLog(void) {
 }
 #endif
 
+#ifdef ESC_CALIB_SITCK_COMMAND
+// Write the boot config at the last byte of the EEPROM
+// Bit | 7 | 6 | 5 | 4 | 3 | 2 | 1 |       0       |
+// ----+---+---+---+---+---+---+---+---------------+
+// Func| X | X | X | X | X | X | X | Calibrate ESC |
+// ----+---+---+---+---+---+---+---+---------------+
+void writeBootUpConfig(uint8_t b) {
+//  EEPROM.write(E2END, b);
+  eeprom_write_byte((uint8_t*) E2END, b);
+}
+
+// Read the last byte of the EEPROM for the boot up config
+uint8_t readBootUpConfig(void) {
+  return eeprom_read_byte((uint8_t*) E2END);
+}
+#endif
+
 #if defined(GPS_NAV)
 //Stores the WP data in the wp struct in the EEPROM
 void storeWP() {
@@ -259,8 +275,8 @@ uint8_t getMaxWPNumber() {
 	#define PROFILES 1
 #endif
 
-	uint16_t first_avail = PROFILES*sizeof(conf) + sizeof(global_conf)+ 1; //Add one byte for addtnl separation
-	uint16_t last_avail  = E2END - PLOG_SIZE - 4;										  //keep the last 4 bytes intakt
+	uint16_t first_avail = PROFILES*sizeof(conf) + sizeof(global_conf)+ 1;  // Add one byte for addtnl separation
+	uint16_t last_avail  = E2END - PLOG_SIZE - 4;                           // keep the last 4 bytes intakt
 	uint16_t wp_num = (last_avail-first_avail)/sizeof(mission_step);
 	if (wp_num>254) wp_num = 254;
 	return wp_num;

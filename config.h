@@ -1043,6 +1043,9 @@
     #define ESC_CALIB_HIGH 2000
     // #define ESC_CALIB_CANNOT_FLY  // uncomment to activate
 
+    /* If this uncomment, It can be trigger by sticks command to sync on next power cycle */
+    #define ESC_CALIB_SITCK_COMMAND
+
   /****           internal frequencies                             ****/
     /* frequenies for rare cyclic actions in the main loop, depend on cycle time
        time base is main loop cycle time - a value of 6 means to trigger the action every 6th run through the main loop

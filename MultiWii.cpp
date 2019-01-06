@@ -569,18 +569,34 @@ void setup() {
   BUZZERPIN_PINMODE;
   STABLEPIN_PINMODE;
   POWERPIN_OFF;
-  initOutput();
+
+  #ifdef ESC_CALIB_SITCK_COMMAND
+    uint8_t bootUpCfg = readBootUpConfig();                                                                 // Checking the last byte of the EEPROM and determine what to do
+    if((bootUpCfg & 0x01) == 1) {                                                                           // Bit 0 of the bootUpCfg
+      blinkLED(2,40,10);
+
+      uint8_t bootUpCfg = readBootUpConfig();                                                               // Reading the bootUpConfig from EEPROM
+                                                                                                            // then it will update accordingly to the 
+                                                                                                            // bits 0 and reset back to 0
+      bootUpCfg = bootUpCfg & 0b11111110;   
+      writeBootUpConfig(bootUpCfg);                                                                         // Sending back to EEPROM. On next power cycle
+                                                                                                            // it will become normal.
+      initOutput(1);                                                                                        // Initialize ESC then will exit (need to power cycle after that)
+    }
+  #endif
+
+  initOutput(0);                                                                                            // Normal initialization of the ESC
   readGlobalSet();
   #ifndef NO_FLASH_CHECK
     #if defined(MEGA)
-      uint16_t i = 65000;                             // only first ~64K for mega board due to pgm_read_byte limitation
+      uint16_t i = 65000;                                                                                   // only first ~64K for mega board due to pgm_read_byte limitation
     #else
       uint16_t i = 32000;
     #endif
     uint16_t flashsum = 0;
     uint8_t pbyt;
     while(i--) {
-      pbyt =  pgm_read_byte(i);        // calculate flash checksum
+      pbyt =  pgm_read_byte(i);                                                                             // calculate flash checksum
       flashsum += pbyt;
       flashsum ^= (pbyt<<8);
     }
@@ -816,7 +832,7 @@ void loop () {
     rcSticks = stTmp;
     
     // perform actions    
-    if (rcData[THROTTLE] <= MINCHECK) {            // THROTTLE at minimum
+    if (rcData[THROTTLE] <= MINCHECK) {                                                                     // THROTTLE at minimum
       #if !defined(FIXEDWING)
         errorGyroI[ROLL] = 0; errorGyroI[PITCH] = 0;
         #if PID_CONTROLLER == 1
@@ -826,46 +842,49 @@ void loop () {
         #endif
         errorAngleI[ROLL] = 0; errorAngleI[PITCH] = 0;
       #endif
-      if (conf.activate[BOXARM] > 0) {             // Arming/Disarming via ARM BOX
+      if (conf.activate[BOXARM] > 0) {                                                                      // Arming/Disarming via ARM BOX
         if ( rcOptions[BOXARM] && f.OK_TO_ARM ) go_arm(); else if (f.ARMED) go_disarm();
       }
     }
     if(rcDelayCommand == 20) {
-      if(f.ARMED) {                   // actions during armed
+      if(f.ARMED) {                                                                                         // actions during armed
         #ifdef ALLOW_ARM_DISARM_VIA_TX_YAW
-          if (conf.activate[BOXARM] == 0 && rcSticks == THR_LO + YAW_LO + PIT_CE + ROL_CE) go_disarm();    // Disarm via YAW
+          if (conf.activate[BOXARM] == 0 && rcSticks == THR_LO + YAW_LO + PIT_CE + ROL_CE) go_disarm();     // Disarm via YAW
         #endif
         #ifdef ALLOW_ARM_DISARM_VIA_TX_ROLL
-          if (conf.activate[BOXARM] == 0 && rcSticks == THR_LO + YAW_CE + PIT_CE + ROL_LO) go_disarm();    // Disarm via ROLL
+          if (conf.activate[BOXARM] == 0 && rcSticks == THR_LO + YAW_CE + PIT_CE + ROL_LO) go_disarm();     // Disarm via ROLL
         #endif
-      } else {                        // actions during not armed
+      } else {                                                                                              // actions during not armed
         i=0;
-        if (rcSticks == THR_LO + YAW_LO + PIT_LO + ROL_CE) {    // GYRO calibration
+        if (rcSticks == THR_LO + YAW_LO + PIT_LO + ROL_CE) {                                                // GYRO calibration
           calibratingG=512;
           #if GPS 
             GPS_reset_home_position();
           #endif
           #if BARO
-            calibratingB=10;  // calibrate baro to new ground level (10 * 25 ms = ~250 ms non blocking)
+            calibratingB=10;                                                                                // calibrate baro to new ground level (10 * 25 ms = ~250 ms non blocking)
           #endif
         }
         #if defined(INFLIGHT_ACC_CALIBRATION)  
-         else if (rcSticks == THR_LO + YAW_LO + PIT_HI + ROL_HI) {    // Inflight ACC calibration START/STOP
-            if (AccInflightCalibrationMeasurementDone){                // trigger saving into eeprom after landing
+          else if (rcSticks == THR_LO + YAW_LO + PIT_HI + ROL_HI) {                                         // Inflight ACC calibration START/STOP
+            if (AccInflightCalibrationMeasurementDone) {                                                    // trigger saving into eeprom after landing
               AccInflightCalibrationMeasurementDone = 0;
               AccInflightCalibrationSavetoEEProm = 1;
-            }else{ 
+            } else { 
               AccInflightCalibrationArmed = !AccInflightCalibrationArmed; 
               #if defined(BUZZER)
-               if (AccInflightCalibrationArmed) alarmArray[0]=2; else   alarmArray[0]=3;
+                if (AccInflightCalibrationArmed)
+                  alarmArray[0]=2;
+                else
+                  alarmArray[0]=3;
               #endif
             }
-         } 
+          } 
         #endif
         #ifdef MULTIPLE_CONFIGURATION_PROFILES
-          if      (rcSticks == THR_LO + YAW_LO + PIT_CE + ROL_LO) i=1;    // ROLL left  -> Profile 1
-          else if (rcSticks == THR_LO + YAW_LO + PIT_HI + ROL_CE) i=2;    // PITCH up   -> Profile 2
-          else if (rcSticks == THR_LO + YAW_LO + PIT_CE + ROL_HI) i=3;    // ROLL right -> Profile 3
+          if      (rcSticks == THR_LO + YAW_LO + PIT_CE + ROL_LO) i=1;                                      // ROLL left  -> Profile 1
+          else if (rcSticks == THR_LO + YAW_LO + PIT_HI + ROL_CE) i=2;                                      // PITCH up   -> Profile 2
+          else if (rcSticks == THR_LO + YAW_LO + PIT_CE + ROL_HI) i=3;                                      // ROLL right -> Profile 3
           if(i) {
             global_conf.currentSet = i-1;
             writeGlobalSet(0);
@@ -874,20 +893,20 @@ void loop () {
             alarmArray[0] = i;
           }
         #endif
-        if (rcSticks == THR_LO + YAW_HI + PIT_HI + ROL_CE) {            // Enter LCD config
+        if (rcSticks == THR_LO + YAW_HI + PIT_HI + ROL_CE) {                                                // Enter LCD config
           #if defined(LCD_CONF)
-            configurationLoop(); // beginning LCD configuration
+            configurationLoop(); i                                                                          // beginning LCD configuration
           #endif
           previousTime = micros();
         }
         #ifdef ALLOW_ARM_DISARM_VIA_TX_YAW
-          else if (conf.activate[BOXARM] == 0 && rcSticks == THR_LO + YAW_HI + PIT_CE + ROL_CE) go_arm();      // Arm via YAW
+          else if (conf.activate[BOXARM] == 0 && rcSticks == THR_LO + YAW_HI + PIT_CE + ROL_CE) go_arm();   // Arm via YAW
         #endif
         #ifdef ALLOW_ARM_DISARM_VIA_TX_ROLL
-          else if (conf.activate[BOXARM] == 0 && rcSticks == THR_LO + YAW_CE + PIT_CE + ROL_HI) go_arm();      // Arm via ROLL
+          else if (conf.activate[BOXARM] == 0 && rcSticks == THR_LO + YAW_CE + PIT_CE + ROL_HI) go_arm();   // Arm via ROLL
         #endif
         #ifdef LCD_TELEMETRY_AUTO
-          else if (rcSticks == THR_LO + YAW_CE + PIT_HI + ROL_LO) {              // Auto telemetry ON/OFF
+          else if (rcSticks == THR_LO + YAW_CE + PIT_HI + ROL_LO) {                                         // Auto telemetry ON/OFF
             if (telemetry_auto) {
               telemetry_auto = 0;
               telemetry = 0;
@@ -896,7 +915,7 @@ void loop () {
           }
         #endif
         #ifdef LCD_TELEMETRY_STEP
-          else if (rcSticks == THR_LO + YAW_CE + PIT_HI + ROL_HI) {              // Telemetry next step
+          else if (rcSticks == THR_LO + YAW_CE + PIT_HI + ROL_HI) {                                         // Telemetry next step
             telemetry = telemetryStepSequence[++telemetryStepIndex % strlen(telemetryStepSequence)];
             #if defined( OLED_I2C_128x64)
               if (telemetry != 0) i2c_OLED_init();
@@ -906,11 +925,23 @@ void loop () {
             LCDclear();
           }
         #endif
+        #ifdef ESC_CALIB_SITCK_COMMAND
+          else if (rcSticks == THR_HI + YAW_CE + PIT_LO + ROL_LO) {                                         // Calibrate ESC on Next Power Cycle
+            uint8_t bootUpCfg = readBootUpConfig();                                                         // Reading the bootUpConfig from EEPROM
+                                                                                                            // then it will update accordingly to the 
+                                                                                                            // bits 0.
+            // bootUpCfg = bootUpCfg | 0x01;
+            writeBootUpConfig(bootUpCfg | 0b00000001);                                                                   // Sending back to EEPROM. On next power cycle
+                                                                                                            // it will calibrate ESC
+
+            blinkLED(20,100,10);                                                                            // Blinks to confirm
+          }
+        #endif
         #if ACC
-          else if (rcSticks == THR_HI + YAW_LO + PIT_LO + ROL_CE) calibratingA=512;     // throttle=max, yaw=left, pitch=min
+          else if (rcSticks == THR_HI + YAW_LO + PIT_LO + ROL_CE) calibratingA=512;                         // throttle=max, yaw=left, pitch=min
         #endif
         #if MAG
-          else if (rcSticks == THR_HI + YAW_HI + PIT_LO + ROL_CE) f.CALIBRATE_MAG = 1;  // throttle=max, yaw=right, pitch=min
+          else if (rcSticks == THR_HI + YAW_HI + PIT_LO + ROL_CE) f.CALIBRATE_MAG = 1;                      // throttle=max, yaw=right, pitch=min
         #endif
         i=0;
         if      (rcSticks == THR_HI + YAW_CE + PIT_HI + ROL_CE) {conf.angleTrim[PITCH]+=2; i=1;}
@@ -919,7 +950,7 @@ void loop () {
         else if (rcSticks == THR_HI + YAW_CE + PIT_CE + ROL_LO) {conf.angleTrim[ROLL] -=2; i=1;}
         if (i) {
           writeParams(1);
-          rcDelayCommand = 0;    // allow autorepetition
+          rcDelayCommand = 0;                                                                               // allow autorepetition
           #if defined(LED_RING)
             blinkLedRing();
           #endif
@@ -931,11 +962,11 @@ void loop () {
     #endif
     
     #if defined(INFLIGHT_ACC_CALIBRATION)
-      if (AccInflightCalibrationArmed && f.ARMED && rcData[THROTTLE] > MINCHECK && !rcOptions[BOXARM] ){ // Copter is airborne and you are turning it off via boxarm : start measurement
+      if (AccInflightCalibrationArmed && f.ARMED && rcData[THROTTLE] > MINCHECK && !rcOptions[BOXARM]){    // Copter is airborne and you are turning it off via boxarm : start measurement
         InflightcalibratingA = 50;
         AccInflightCalibrationArmed = 0;
       }  
-      if (rcOptions[BOXCALIB]) {      // Use the Calib Option to activate : Calib = TRUE Meausrement started, Land and Calib = 0 measurement stored
+      if (rcOptions[BOXCALIB]) {                                                                            // Use the Calib Option to activate : Calib = TRUE Meausrement started, Land and Calib = 0 measurement stored
         if (!AccInflightCalibrationActive && !AccInflightCalibrationMeasurementDone){
           InflightcalibratingA = 50;
         }
