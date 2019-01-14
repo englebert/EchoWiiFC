@@ -931,7 +931,7 @@ void loop () {
                                                                                                             // then it will update accordingly to the 
                                                                                                             // bits 0.
             // bootUpCfg = bootUpCfg | 0x01;
-            writeBootUpConfig(bootUpCfg | 0b00000001);                                                                   // Sending back to EEPROM. On next power cycle
+            writeBootUpConfig(bootUpCfg | 0b00000001);                                                      // Sending back to EEPROM. On next power cycle
                                                                                                             // it will calibrate ESC
 
             blinkLED(20,100,10);                                                                            // Blinks to confirm
