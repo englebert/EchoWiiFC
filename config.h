@@ -66,8 +66,8 @@
 
   /****************************    Motor maxthrottle    *******************************/
     /* this is the maximum value for the ESCs at full power, this value can be increased up to 2000 */
-    // #define MAXTHROTTLE 2000  // For BLHELI
-    #define MAXTHROTTLE 1500  // For 250 Quad due to 4S battery. Temporary deduce power.
+    #define MAXTHROTTLE 2000  // For BLHELI
+    // #define MAXTHROTTLE 1500  // For 250 Quad due to 4S battery. Temporary deduce power.
    
   /****************************    Mincommand          *******************************/
     /* this is the value for the ESCs when they are not armed
@@ -444,7 +444,7 @@
 
   /* only enable any of this if you must change the default pin assignment, e.g. your board does not have a specific pin */
   /* you may need to change PINx and PORTx plus #shift according to the desired pin! */
-  //#define OVERRIDE_V_BATPIN                   A0 // instead of A3    // Analog PIN 3
+  #define OVERRIDE_V_BATPIN                     A0 // instead of A3    // Analog PIN 3
   //#define OVERRIDE_PSENSORPIN                 A1 // instead of A2    // Analog PIN 2
   //#define OVERRIDE_LEDPIN_PINMODE             pinMode (A1, OUTPUT); // use A1 instead of d13
   //#define OVERRIDE_LEDPIN_TOGGLE              PINC |= 1<<1; // PINB |= 1<<5;     //switch LEDPIN state (digital PIN 13)
@@ -471,6 +471,8 @@
   /******                Serial com speed    *********************************/
     /* This is the speed of the serial interfaces */
     #define SERIAL0_COM_SPEED 115200
+    // Set to 9600 due to my HC05 unable to configure.
+    // #define SERIAL0_COM_SPEED 9600
     #define SERIAL1_COM_SPEED 115200
     #define SERIAL2_COM_SPEED 115200
     #define SERIAL3_COM_SPEED 115200
@@ -624,6 +626,12 @@
   /*******************************    OSD Switch    *************************************/
     // This adds a box that can be interpreted by OSD in activation status (to switch on/off the overlay for instance)
   //#define OSD_SWITCH
+
+  /********************************* Throttle Selection **(******************************/
+  /* This will make sure the ESC can limit the full speed based on the battery types.
+     For a 4S it is kinda hard to control. So the maximum throttle will be based on
+     the switches. If OFF: 100%, ON: 50% */
+  #define THROTTLE_SELECTION
 
   /**************************************************************************************/
   /***********************                  TX-related         **************************/
@@ -816,12 +824,12 @@
        with R1=33k and R2=51k
        vbat = [0;1023]*16/VBATSCALE
        must be associated with #define BUZZER ! */
-    //#define VBAT              // uncomment this line to activate the vbat code
-    #define VBATSCALE       131 // (*) (**) change this value if readed Battery voltage is different than real voltage
-    #define VBATNOMINAL     126 // 12,6V full battery nominal voltage - only used for lcd.telemetry
-    #define VBATLEVEL_WARN1 107 // (*) (**) 10,7V
-    #define VBATLEVEL_WARN2  99 // (*) (**) 9.9V
-    #define VBATLEVEL_CRIT   93 // (*) (**) 9.3V - critical condition: if vbat ever goes below this value, permanent alarm is triggered
+    #define VBAT                // uncomment this line to activate the vbat code                                              10k        1k
+    #define VBATSCALE        35 // (*) (**) change this value if readed Battery voltage is different than real voltage ( +|--/\/\/\----/\/\/\----|- )
+    #define VBATNOMINAL     168 // 12,6V full battery nominal voltage - only used for lcd.telemetry
+    #define VBATLEVEL_WARN1 144 // (*) (**) 14.4V
+    #define VBATLEVEL_WARN2 140 // (*) (**) 14.0V
+    #define VBATLEVEL_CRIT  130 // (*) (**) 13.0V - critical condition: if vbat ever goes below this value, permanent alarm is triggered
     #define NO_VBAT          16 // Avoid beeping without any battery
 
 
