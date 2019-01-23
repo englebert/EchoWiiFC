@@ -79,6 +79,9 @@ enum box {
   #ifdef OSD_SWITCH
     BOXOSD,
   #endif
+  #ifdef THROTTLE_SELECTION
+    BOXTHROTTLE,
+  #endif
   CHECKBOXITEMS
 };
 

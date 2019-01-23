@@ -1431,13 +1431,26 @@ void mixTable() {
     }
   #endif
   /****************                normalize the Motors values                ******************/
+  // HERE is the section for tuning the maximum. ENGLEBERT
     maxMotor=motor[0];
     for(i=1; i< NUMBER_MOTOR; i++)
       if (motor[i]>maxMotor) maxMotor=motor[i];
     for(i=0; i< NUMBER_MOTOR; i++) {
-      if (maxMotor > MAXTHROTTLE) // this is a way to still have good gyro corrections if at least one motor reaches its max.
-        motor[i] -= maxMotor - MAXTHROTTLE;
-      motor[i] = constrain(motor[i], conf.minthrottle, MAXTHROTTLE);
+      #ifdef THROTTLE_SELECTION
+        if (rcOptions[BOXTHROTTLE]) {
+          if (maxMotor > rcData[AUX1])                                      // Using the Auxiliary 1 values instead of predefined. Something like tuning the
+            motor[i] -= maxMotor - rcData[AUX1];                            // carburetor on demand :)
+          motor[i] = constrain(motor[i], conf.minthrottle, rcData[AUX1]);
+        } else {
+          if (maxMotor > MAXTHROTTLE)                                       // Using back the code if the option is not selected from the GUI
+            motor[i] -= maxMotor - MAXTHROTTLE;
+          motor[i] = constrain(motor[i], conf.minthrottle, MAXTHROTTLE);
+        }
+      #else
+        if (maxMotor > MAXTHROTTLE)                                         // this is a way to still have good gyro corrections if at least one motor reaches its max.
+          motor[i] -= maxMotor - MAXTHROTTLE;
+        motor[i] = constrain(motor[i], conf.minthrottle, MAXTHROTTLE);
+      #endif
       if ((rcData[THROTTLE] < MINCHECK) && !f.BARO_MODE)
       #ifndef MOTOR_STOP
         motor[i] = conf.minthrottle;

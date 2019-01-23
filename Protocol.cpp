@@ -420,6 +420,9 @@ void evaluateCommand() {
      #if defined(OSD_SWITCH)
        if(rcOptions[BOXOSD]) tmp |= 1<<BOXOSD;
      #endif
+     #if defined(THROTTLE_SELECTION)
+       if(rcOptions[BOXTHROTTLE]) tmp |= 1<<BOXTHROTTLE;
+     #endif
      if(f.ARMED) tmp |= 1<<BOXARM;
      st.flag             = tmp;
      st.set              = global_conf.currentSet;

@@ -1280,6 +1280,16 @@ PROGMEM const void * const lcd_param_ptr_table [] = {
     &lcd_param_text56, &conf.activate[BOXOSD],&__AUX4,
   #endif
 #endif
+#ifdef THROTTLE_SELECTION
+  &lcd_param_text56, &conf.activate[BOXTHROTTLE],&__AUX1,
+  #ifndef SUPPRESS_LCD_CONF_AUX2
+    &lcd_param_text56, &conf.activate[BOXTHROTTLE],&__AUX2,
+  #endif
+  #ifndef SUPPRESS_LCD_CONF_AUX34
+    &lcd_param_text56, &conf.activate[BOXTHROTTLE],&__AUX3,
+    &lcd_param_text56, &conf.activate[BOXTHROTTLE],&__AUX4,
+  #endif
+#endif
 #endif //lcd.conf.aux
 
 #ifdef LOG_VALUES
@@ -1874,6 +1884,9 @@ static char checkboxitemNames[][4] = {
     #endif
     #ifdef OSD_SWITCH
       "OSD",
+    #endif
+    #ifdef THROTTLE_SELECTION
+      "THR",
     #endif
   ""};
 void output_checkboxitems() {

@@ -92,6 +92,9 @@ const char boxnames[] PROGMEM = // names for dynamic generation of config GUI
   #ifdef OSD_SWITCH
     "OSD SW;"
   #endif
+  #ifdef THROTTLE_SELECTION
+    "THROTTLE;"
+  #endif
 ;
 
 const uint8_t boxids[] PROGMEM = {// permanent IDs associated to boxes. This way, you can rely on an ID number to identify a BOX function.
@@ -142,6 +145,9 @@ const uint8_t boxids[] PROGMEM = {// permanent IDs associated to boxes. This way
   #endif
   #ifdef OSD_SWITCH
     19, //"OSD_SWITCH;"
+  #endif
+  #ifdef THROTTLE_SELECTION
+    20, //"THROTTLE;"
   #endif
 };
 
